@@ -1,9 +1,14 @@
 <?php
 header("Content-Type: application/json");
 header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE");
+header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type");
 
-// เรียกไฟล์เชื่อมต่อฐานข้อมูล
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit;
+}
+
 require_once 'db.php';
 
 $method = $_SERVER['REQUEST_METHOD'];
@@ -13,7 +18,10 @@ switch ($method) {
     case 'GET':
         if (isset($_GET['id'])) {
             $id = intval($_GET['id']);
-            $result = $conn->query("SELECT * FROM products WHERE id=$id");
+            $stmt = $conn->prepare("SELECT * FROM products WHERE id=?");
+            $stmt->bind_param("i", $id);
+            $stmt->execute();
+            $result = $stmt->get_result();
             echo json_encode($result->fetch_assoc());
         } else {
             $result = $conn->query("SELECT * FROM products");
@@ -26,41 +34,60 @@ switch ($method) {
         break;
 
     case 'POST':
-        $name = $input['name'];
-        $brand = $input['brand'];
-        $price = $input['price'];
-        $stock = $input['stock'];
-        $description = $input['description'];
-        $image_url = $input['image_url'];
+        $stmt = $conn->prepare("INSERT INTO products (name, brand, price, stock, description, image_url) VALUES (?,?,?,?,?,?)");
+        $stmt->bind_param(
+            "ssdiss",
+            $input['name'],
+            $input['brand'],
+            $input['price'],
+            $input['stock'],
+            $input['description'],
+            $input['image_url']
+        );
 
-        $sql = "INSERT INTO products (name, brand, price, stock, description, image_url) 
-                VALUES ('$name','$brand',$price,$stock,'$description','$image_url')";
-        echo $conn->query($sql) ? json_encode(["message" => "Product created"]) 
-                                 : json_encode(["error" => $conn->error]);
+        if ($stmt->execute()) {
+            echo json_encode(["message" => "Product created", "id" => $conn->insert_id]);
+        } else {
+            echo json_encode(["error" => $stmt->error]);
+        }
         break;
 
     case 'PUT':
         $id = intval($_GET['id']);
-        $name = $input['name'];
-        $brand = $input['brand'];
-        $price = $input['price'];
-        $stock = $input['stock'];
-        $description = $input['description'];
-        $image_url = $input['image_url'];
+        $stmt = $conn->prepare("UPDATE products SET name=?, brand=?, price=?, stock=?, description=?, image_url=? WHERE id=?");
+        $stmt->bind_param(
+            "ssdissi",
+            $input['name'],
+            $input['brand'],
+            $input['price'],
+            $input['stock'],
+            $input['description'],
+            $input['image_url'],
+            $id
+        );
 
-        $sql = "UPDATE products SET name='$name', brand='$brand', price=$price, stock=$stock,
-                description='$description', image_url='$image_url' WHERE id=$id";
-        echo $conn->query($sql) ? json_encode(["message" => "Product updated"]) 
-                                 : json_encode(["error" => $conn->error]);
+        if ($stmt->execute()) {
+            echo json_encode(["message" => "Product updated"]);
+        } else {
+            echo json_encode(["error" => $stmt->error]);
+        }
         break;
 
     case 'DELETE':
         $id = intval($_GET['id']);
-        $sql = "DELETE FROM products WHERE id=$id";
-        echo $conn->query($sql) ? json_encode(["message" => "Product deleted"]) 
-                                 : json_encode(["error" => $conn->error]);
+        $stmt = $conn->prepare("DELETE FROM products WHERE id=?");
+        $stmt->bind_param("i", $id);
+
+        if ($stmt->execute()) {
+            echo json_encode(["message" => "Product deleted"]);
+        } else {
+            echo json_encode(["error" => $stmt->error]);
+        }
+        break;
+
+    default:
+        echo json_encode(["error" => "Method not supported"]);
         break;
 }
 
-// ปิดการเชื่อมต่อ
 $conn->close();

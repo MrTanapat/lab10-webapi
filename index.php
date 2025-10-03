@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="UTF-8">
-  <title>Products</title>
+  <title>Products-Lab10</title>
   <link rel="stylesheet" href="style.css">
 </head>
 
@@ -11,12 +11,19 @@
   <div class="container">
     <h1>Products</h1>
 
-    <button id="openModal" class="add">Add Product</button>
-    <input type="text" id="search" placeholder="Search product..." class="search">
+    <!-- Buttons & Search -->
+    <div style="display:flex; justify-content: space-between; flex-wrap: wrap; margin-bottom: 15px;">
+      <button id="openModal" class="add">Add Product</button>
+      <input type="text" id="search" placeholder="Search product..." style="flex:1; min-width:200px; margin-left:10px; padding:8px; border-radius:8px; border:1px solid #ccc;">
+    </div>
 
+    <!-- Product list -->
     <div id="products"></div>
-    <div id="pagination"></div>
 
+    <!-- Pagination -->
+    <div id="pagination" style="text-align:center; margin-top:25px; display:flex; gap:10px; justify-content:center;"></div>
+
+    <!-- Modal -->
     <div id="productModal" class="modal">
       <div class="modal-content">
         <span class="close">&times;</span>
@@ -78,18 +85,23 @@
       paginated.forEach(p => {
         const div = document.createElement("div");
         div.className = "product";
+
+        // ถ้าไม่มีรูปให้ใช้ placeholder
+        const imageURL = p.image_url && p.image_url !== "" ? p.image_url : "https://via.placeholder.com/220x150?text=No+Image";
+
         div.innerHTML = `
-          <div>
-            <h3>${p.name}</h3>
-            <p>Brand: ${p.brand}</p>
-            <p>Price: ${p.price}</p>
-            <p>Stock: ${p.stock}</p>
-          </div>
-          <div>
-            <button class="edit" onclick="editProduct(${p.id})">Edit</button>
-            <button class="delete" onclick="deleteProduct(${p.id})">Delete</button>
-          </div>
-        `;
+      <img src="${imageURL}" alt="${p.name}">
+      <div class="product-details">
+        <h3>${p.name}</h3>
+        <p>Brand: ${p.brand}</p>
+        <p>Price: $${p.price}</p>
+        <p>Stock: ${p.stock}</p>
+      </div>
+      <div class="product-buttons">
+        <button class="edit" onclick="editProduct(${p.id})">Edit</button>
+        <button class="delete" onclick="deleteProduct(${p.id})">Delete</button>
+      </div>
+    `;
         container.appendChild(div);
       });
     }
