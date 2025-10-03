@@ -6,8 +6,7 @@
   - ตารางข้อมูลสินค้า (products)
     <img width="1200" height="600" alt="Screenshot 2025-10-03 095727" src="https://github.com/user-attachments/assets/e545dcb9-b1a4-4482-a019-8490afa612fd" />
 ---
-## สร้างฐานข้อมูล MySQL
-  - Web-api
+## สร้าง Web-api
   <img width="1200" height="600" alt="Screenshot 2025-10-03 125302" src="https://github.com/user-attachments/assets/64652bdf-5b72-4f3f-a31b-e258b500d106" />
 
 ---
